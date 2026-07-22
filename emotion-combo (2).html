@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>קומבינציית רגשות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1E2530;
+    --bg-2:#262E3B;
+    --panel:#2B3442;
+    --panel-2:#313B4B;
+    --ink:#F1ECE2;
+    --ink-dim:#A8B0BE;
+    --gold:#D4A657;
+    --gold-dim:#8A754A;
+    --line:#3C4657;
+    --shadow: 0 6px 18px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1100px 500px at 20% -10%, #2A3444 0%, transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, #26303f 0%, transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Rubik',sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  header{
+    padding:28px 20px 18px;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(212,166,87,.06), transparent);
+  }
+  header h1{
+    font-family:'Frank Ruhl Libre', serif;
+    font-weight:900;
+    font-size:clamp(24px,4vw,36px);
+    margin:0 0 6px;
+    color:var(--ink);
+    letter-spacing:.3px;
+  }
+  header h1 span{color:var(--gold);}
+  header p{
+    margin:0 auto;
+    max-width:620px;
+    color:var(--ink-dim);
+    font-size:14px;
+    line-height:1.7;
+  }
+
+  .section-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:26px 20px 10px;
+    color:var(--ink-dim);
+    font-size:13px;
+    letter-spacing:.5px;
+    text-transform:none;
+  }
+  .section-title .num{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--panel-2);
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px; color:var(--gold); border:1px solid var(--line);
+  }
+  .section-title .line{flex:1;height:1px;background:var(--line);}
+
+  /* ---- COMBO ZONE ---- */
+  #combo-zone{
+    margin:0 20px;
+    padding:16px;
+    background:var(--bg-2);
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+  }
+  .combo-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:10px;
+    border-radius:12px;
+    margin-bottom:10px;
+    background:var(--panel);
+  }
+  .combo-row.primary{
+    background:linear-gradient(180deg, rgba(212,166,87,.10), rgba(212,166,87,.03));
+    border:1.5px dashed var(--gold-dim);
+  }
+  .row-label{
+    flex:0 0 96px;
+    font-size:13px;
+    color:var(--ink-dim);
+    padding:8px 10px;
+    align-self:stretch;
+    display:flex;align-items:center;justify-content:center;
+    text-align:center;
+    line-height:1.35;
+    border-left:1px solid var(--line);
+  }
+  .combo-row.primary .row-label{color:var(--gold); border-color:var(--gold-dim); font-weight:600;}
+  .row-cards{
+    flex:1;
+    min-height:78px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+    padding:4px;
+    border-radius:8px;
+  }
+  .row-cards.drag-over, .lane-cards.drag-over{
+    background:rgba(212,166,87,.08);
+    outline:2px dashed var(--gold-dim);
+    outline-offset:-4px;
+  }
+  .row-cards:empty::before, .combo-row.primary .row-cards:before{
+    content:"גררו לכאן קלפים";
+    color:var(--ink-dim);
+    font-size:12px;
+    opacity:.5;
+  }
+  .row-cards:not(:empty)::before{content:none;}
+  #add-row-wrap{text-align:center;margin-top:4px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  #add-row{
+    background:none;border:1px solid var(--line);color:var(--ink-dim);
+    padding:6px 14px;border-radius:20px;font-family:'Rubik';font-size:12px;
+    cursor:pointer;
+  }
+  #add-row:hover{border-color:var(--gold-dim);color:var(--gold);}
+  #share-summary-btn{
+    background:linear-gradient(180deg, rgba(212,166,87,.18), rgba(212,166,87,.06));
+    border:1px solid var(--gold-dim);color:var(--gold);
+    padding:6px 14px;border-radius:20px;font-family:'Rubik';font-size:12px;font-weight:600;
+    cursor:pointer;
+  }
+  #share-summary-btn:hover{background:rgba(212,166,87,.28);}
+
+  /* ---- MODAL ---- */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(10,12,16,.72);
+    display:none; align-items:center; justify-content:center;
+    z-index:1000; padding:20px;
+  }
+  .modal-box{
+    background:var(--bg-2);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px;
+    max-width:460px; width:100%;
+    box-shadow:var(--shadow);
+    max-height:85vh; overflow:auto;
+  }
+  .modal-box h3{
+    margin:0 0 4px;
+    font-family:'Frank Ruhl Libre', serif;
+    font-size:19px; color:var(--ink);
+  }
+  .modal-sub{color:var(--ink-dim); font-size:12px; margin-bottom:14px; line-height:1.6;}
+  .modal-box textarea{
+    width:100%; min-height:100px;
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    color:var(--ink); padding:10px; font-family:'Rubik'; font-size:14px;
+    resize:vertical;
+  }
+  .modal-box pre{
+    white-space:pre-wrap; font-family:'Rubik'; font-size:13px;
+    background:var(--panel); border-radius:10px; padding:12px;
+    line-height:1.9; max-height:340px; overflow:auto; margin:0;
+    color:var(--ink);
+  }
+  .modal-actions{display:flex; gap:8px; margin-top:16px; justify-content:flex-start; flex-wrap:wrap;}
+  .modal-actions button{
+    padding:8px 16px; border-radius:20px; border:1px solid var(--line);
+    background:none; color:var(--ink); font-family:'Rubik'; font-size:13px; cursor:pointer;
+  }
+  .modal-actions button.primary{
+    background:var(--gold); color:#20180a; border-color:var(--gold); font-weight:600;
+  }
+  .modal-actions button:hover{border-color:var(--gold-dim);}
+
+  /* ---- CATEGORIES ---- */
+  #categories-zone{margin:0 20px;}
+  .category-lane{
+    margin-bottom:12px;
+    border-radius:14px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    background:var(--panel);
+  }
+  .cat-head{
+    display:flex;align-items:center;gap:8px;
+    padding:9px 10px 9px 14px;
+    background:color-mix(in srgb, var(--cat-color) 22%, var(--panel));
+    border-bottom:1px solid var(--line);
+    cursor:grab;
+    touch-action:none;
+    user-select:none;
+  }
+  .cat-head:active{cursor:grabbing;}
+  .cat-head.swiping{background:color-mix(in srgb, var(--cat-color) 34%, var(--panel));}
+  .cat-dot{width:10px;height:10px;border-radius:50%;background:var(--cat-color);flex:0 0 auto;}
+  .cat-head h3{margin:0;font-size:14px;font-weight:600;color:var(--ink);}
+  .cat-count{margin-right:auto;font-size:11px;color:var(--ink-dim);}
+  .cat-top-btn{
+    flex:0 0 auto;
+    width:26px;height:26px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:rgba(0,0,0,.15);
+    color:var(--ink);
+    font-size:13px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+  }
+  .cat-top-btn:hover{border-color:var(--gold-dim);color:var(--gold);}
+  .cat-reset-btn{
+    flex:0 0 auto;
+    padding:0 10px;
+    height:26px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:rgba(0,0,0,.15);
+    color:var(--ink-dim);
+    font-size:11px;
+    font-family:'Rubik';
+    display:flex;align-items:center;justify-content:center;gap:4px;
+    cursor:pointer;
+  }
+  .cat-reset-btn:hover{border-color:var(--gold-dim);color:var(--gold);}
+  .cat-swipe-hint{
+    flex:0 0 auto;
+    font-size:10px;
+    color:var(--ink-dim);
+    opacity:.55;
+    letter-spacing:.3px;
+  }
+  .lane-cards{
+    display:flex;flex-wrap:wrap;gap:8px;
+    padding:12px 14px;
+    min-height:56px;
+  }
+
+  /* ---- CARDS ---- */
+  .card{
+    --cat-color:#888;
+    position:relative;
+    padding:9px 14px;
+    border-radius:10px;
+    background:color-mix(in srgb, var(--cat-color) 78%, #1a1f28 22%);
+    color:#1A1410;
+    font-size:14px;
+    font-weight:600;
+    cursor:grab;
+    user-select:none;
+    touch-action:none;
+    box-shadow:0 2px 6px rgba(0,0,0,.25);
+    border:1px solid rgba(255,255,255,.15);
+    white-space:nowrap;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .card:active{cursor:grabbing;}
+  .card.dragging{
+    opacity:.25;
+  }
+  .card .dim-btn{
+    position:absolute;
+    top:-6px; left:-6px;
+    width:18px;height:18px;
+    border-radius:50%;
+    background:var(--bg-2);
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    font-size:12px;
+    font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+  }
+  .card .dim-btn:hover{color:var(--gold);border-color:var(--gold-dim);}
+  .card .note-btn{
+    display:none;
+    position:absolute;
+    top:-6px; right:-6px;
+    width:18px;height:18px;
+    border-radius:50%;
+    background:var(--bg-2);
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    font-size:10px;
+    align-items:center;justify-content:center;
+    cursor:pointer;
+  }
+  .card.in-combo .note-btn{display:flex;}
+  .card .note-btn:hover{color:var(--gold);border-color:var(--gold-dim);}
+  .card.has-note{box-shadow:0 0 0 2px var(--gold) inset, 0 2px 6px rgba(0,0,0,.25);}
+  .card.has-note .note-btn{color:var(--gold);border-color:var(--gold-dim);}
+  .card.dimmed{
+    opacity:.32;
+    filter:grayscale(60%);
+  }
+  .card.dimmed:hover{opacity:.55;}
+
+  .ghost-card{
+    position:fixed;
+    pointer-events:none;
+    z-index:999;
+    opacity:.9;
+    transform:translate(-50%,-50%) rotate(-3deg);
+  }
+
+  footer{
+    text-align:center;
+    color:var(--ink-dim);
+    font-size:11px;
+    padding:30px 20px 10px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>קומבינציית <span>רגשות</span></h1>
+  <p>גררו קלפים לאזור העליון כדי לבנות את התמונה הרגשית שלכם עכשיו. השורה הראשונה היא המרכזית. אפשר גם לסדר כל קטגוריה לפי חשיבות. קלף שלא מעניין אתכם כרגע — לחצו על ה־ &minus; שבפינתו: הוא יתעמעם ויידחק הצידה, ואפשר להחזיר אותו באותה לחיצה. כפתור ה־↻ בראש כל קטגוריה מחזיר את כולם למואר בבת אחת.</p>
+</header>
+
+<div class="section-title"><span class="num">1</span>הקומבינציה שלי<span class="line"></span></div>
+<div id="combo-zone">
+  <div class="combo-row primary" data-row="0">
+    <div class="row-label">הרגשתי...</div>
+    <div class="row-cards" data-row-index="0" data-zone="combo"></div>
+  </div>
+  <div id="extra-rows"></div>
+  <div id="add-row-wrap">
+    <button id="add-row">+ הוסף שורה נוספת</button>
+    <button id="share-summary-btn">📝 סיכום לשיתוף</button>
+  </div>
+</div>
+
+<div class="section-title"><span class="num">2</span>הרגשות שלי לפי קטגוריות<span class="line"></span></div>
+<div id="categories-zone"></div>
+
+<footer>נבנה עבור בעז · קומבינציית רגשות</footer>
+
+<div class="modal-overlay" id="modal-overlay"></div>
+
+<script>
+const CATEGORIES = [
+  { id:'joy',    name:'שמחה והתלהבות',      color:'#E7B23A', emotions:['שמחה','התרגשות','התפעמות','התלהבות','חיות','מרץ','עליצות','הנאה','אושר','קורת רוח','התרוממות רוח','התפעלות','ציפייה','שעשוע','הפתעה','סקרנות','תדהמה'] },
+  { id:'calm',   name:'רוגע ושלווה',        color:'#5FBFA8', emotions:['שלווה','נינוחות','רגיעה','ביטחון','הקלה','רוך','מרגוע','פיוס','שקט נפשי','שביעות רצון','נחת','נועם'] },
+  { id:'love',   name:'חיבור ואהבה',        color:'#E58AA6', emotions:['אהבה','קרבה','חום','אמון','שייכות','הערכה','תודה','הוקרת תודה','השראה','פליאה','משיכה','חיבה'] },
+  { id:'pride',  name:'סיפוק וגאווה',       color:'#9C7FD4', emotions:['סיפוק','גאווה','מיצוי','התעצמות','חיוניות','עניין','סקרנות','עוצמה','בקרה'] },
+  { id:'fear',   name:'פחד וחרדה',          color:'#D98A4E', emotions:['פחד','חרדה','דאגה','חשש','בהלה','חוסר אונים','אי-ודאות','מתח','לחץ','דריכות','קטנות','חוסר מסוגלות','דכדוך','כמיהה','תדהמה','תהייה'] },
+  { id:'sad',    name:'עצב ואובדן',         color:'#5B85B8', emotions:['עצב','יגון','צער','ייאוש','אכזבה','לב שבור','מלנכוליה','ריקנות','רחמים','נטישה','בגידה','פגיעות','זעזוע','כאב','ניתוק','סבל','געגוע','הלם','שיתוק','בלבול','אובדן','ריחוק'] },
+  { id:'anger',  name:'כעס ותסכול',         color:'#D5615A', emotions:['כעס','תסכול','זעם','טינה','מרמור','עצבנות','קוצר רוח','חוסר סובלנות','תרעומת','שנאה','מורת רוח','רתיעה','עלבון','דחייה'] },
+  { id:'lonely', name:'חוסר חיבור ובדידות', color:'#8891A6', emotions:['בדידות','ניכור','זרות','תלישות','דחייה','חוסר שייכות','קנאה'] },
+  { id:'shame',  name:'אשמה ובושה',         color:'#A9835A', emotions:['אשמה','בושה','חרטה','מבוכה','שיפוטיות עצמית','ביקורתיות','היסוס','ספקנות'] },
+  { id:'tired',  name:'עייפות ותשישות',     color:'#8D96A8', emotions:['תשישות','עייפות','חוסר אונים','כובד','חוסר אנרגיה'] },
+];
+
+const comboZone = document.getElementById('combo-zone');
+const extraRows = document.getElementById('extra-rows');
+const catZone = document.getElementById('categories-zone');
+
+let rowCount = 1;
+let cardIdSeq = 0;
+
+// ---------- build categories ----------
+CATEGORIES.forEach(cat=>{
+  const lane = document.createElement('div');
+  lane.className = 'category-lane';
+  lane.style.setProperty('--cat-color', cat.color);
+
+  const head = document.createElement('div');
+  head.className = 'cat-head';
+  head.innerHTML = `<span class="cat-dot"></span><h3>${cat.name}</h3><span class="cat-count">${cat.emotions.length}</span><button class="cat-reset-btn" title="החזר את כל קלפי הקטגוריה למואר">↻ הצג הכל</button><span class="cat-swipe-hint">החליקו למטה ↓</span><button class="cat-top-btn" title="דחוף קטגוריה זו למטה כדי לעלות את הבאה">⬇</button>`;
+
+  const laneCards = document.createElement('div');
+  laneCards.className = 'lane-cards';
+  laneCards.dataset.zone = 'category';
+  laneCards.dataset.cat = cat.id;
+
+  cat.emotions.forEach((text, idx)=>{
+    const card = makeCard(text, cat.id, cat.color);
+    card.dataset.origIndex = idx;
+    laneCards.appendChild(card);
+  });
+
+  lane.appendChild(head);
+  lane.appendChild(laneCards);
+  catZone.appendChild(lane);
+
+  setupCategoryReorder(lane, head);
+
+  head.querySelector('.cat-reset-btn').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    resetCategory(laneCards);
+  });
+});
+
+function makeCard(text, catId, color){
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.style.setProperty('--cat-color', color);
+  card.dataset.id = 'c' + (cardIdSeq++);
+  card.dataset.origin = catId;
+  card.dataset.text = text;
+  card.textContent = text;
+
+  const dimBtn = document.createElement('span');
+  dimBtn.className = 'dim-btn';
+  dimBtn.textContent = '\u2212';
+  dimBtn.title = 'עמעם קלף זה ודחוף אותו הצידה';
+  dimBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    toggleDim(card);
+  });
+  card.appendChild(dimBtn);
+
+  const noteBtn = document.createElement('span');
+  noteBtn.className = 'note-btn';
+  noteBtn.textContent = '✎';
+  noteBtn.title = 'כתבו כמה מילים על הרגש הזה';
+  noteBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    openNoteEditor(card);
+  });
+  card.appendChild(noteBtn);
+
+  attachDrag(card);
+  return card;
+}
+
+function updateDimIcon(card){
+  const btn = card.querySelector('.dim-btn');
+  if(!btn) return;
+  if(card.classList.contains('dimmed')){
+    btn.textContent = '+';
+    btn.title = 'החזירו קלף זה למואר';
+  } else {
+    btn.textContent = '\u2212';
+    btn.title = 'עמעם קלף זה ודחוף אותו הצידה';
+  }
+}
+
+function toggleDim(card){
+  const willDim = !card.classList.contains('dimmed');
+  card.classList.toggle('dimmed', willDim);
+  updateDimIcon(card);
+
+  const parent = card.parentElement;
+  if(parent){
+    if(willDim){
+      // push it to the end of its row/lane (visually to the left, since dir=rtl)
+      parent.appendChild(card);
+    } else {
+      // bring it back: place it right before the first still-dimmed sibling
+      const firstDimmed = [...parent.children].find(el => el.classList && el.classList.contains('card') && el.classList.contains('dimmed'));
+      if(firstDimmed) parent.insertBefore(card, firstDimmed);
+    }
+  }
+  refreshCounts();
+}
+
+function resetCategory(laneCards){
+  const cards = [...laneCards.querySelectorAll('.card')];
+  cards.forEach(c=>{
+    c.classList.remove('dimmed');
+    updateDimIcon(c);
+  });
+  cards.sort((a,b)=> Number(a.dataset.origIndex) - Number(b.dataset.origIndex));
+  cards.forEach(c=> laneCards.appendChild(c));
+  refreshCounts();
+}
+
+// ---------- add-row ----------
+document.getElementById('add-row').addEventListener('click', ()=>{
+  const row = document.createElement('div');
+  row.className = 'combo-row';
+  row.dataset.row = rowCount;
+  const label = rowCount === 1 ? 'אבל גם הרגשתי...' : 'וגם הרגשתי...';
+  row.innerHTML = `<div class="row-label">${label}</div><div class="row-cards" data-row-index="${rowCount}" data-zone="combo"></div>`;
+  extraRows.appendChild(row);
+  rowCount++;
+});
+
+// ---------- drag logic (pointer events, works for mouse + touch) ----------
+let dragState = null;
+
+function attachDrag(card){
+  card.addEventListener('pointerdown', (e)=>{
+    // ignore if clicking the dim or note button
+    if(e.target.classList.contains('dim-btn') || e.target.classList.contains('note-btn')) return;
+    startDrag(card, e);
+  });
+}
+
+function startDrag(card, e){
+  e.preventDefault();
+  const rect = card.getBoundingClientRect();
+  const ghost = card.cloneNode(true);
+  ghost.classList.add('ghost-card');
+  ghost.style.width = rect.width + 'px';
+  ghost.querySelectorAll('.dim-btn, .note-btn').forEach(b=>b.remove());
+  document.body.appendChild(ghost);
+
+  card.classList.add('dragging');
+
+  dragState = {
+    card, ghost,
+    originParent: card.parentElement,
+    originNext: card.nextSibling,
+  };
+
+  moveGhost(e.clientX, e.clientY);
+
+  const onMove = (ev)=>{
+    moveGhost(ev.clientX, ev.clientY);
+    updateDropTarget(ev.clientX, ev.clientY);
+  };
+  const onUp = (ev)=>{
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    finishDrag(ev.clientX, ev.clientY);
+  };
+  document.addEventListener('pointermove', onMove);
+  document.addEventListener('pointerup', onUp);
+}
+
+function moveGhost(x,y){
+  if(!dragState) return;
+  dragState.ghost.style.left = x + 'px';
+  dragState.ghost.style.top = y + 'px';
+}
+
+let currentZone = null;
+function updateDropTarget(x,y){
+  dragState.ghost.style.display = 'none';
+  const el = document.elementFromPoint(x,y);
+  dragState.ghost.style.display = '';
+  const zone = el ? el.closest('.row-cards, .lane-cards') : null;
+
+  if(currentZone && currentZone !== zone){
+    currentZone.classList.remove('drag-over');
+  }
+  if(zone){
+    zone.classList.add('drag-over');
+  }
+  currentZone = zone;
+}
+
+function finishDrag(x,y){
+  if(!dragState) return;
+  const { card, ghost, originParent, originNext } = dragState;
+
+  document.querySelectorAll('.drag-over').forEach(z=>z.classList.remove('drag-over'));
+
+  ghost.style.display = 'none';
+  const el = document.elementFromPoint(x,y);
+  ghost.style.display = '';
+  const zone = el ? el.closest('.row-cards, .lane-cards') : null;
+
+  card.classList.remove('dragging');
+  ghost.remove();
+
+  if(zone){
+    // find insertion point based on x position among existing cards
+    const siblings = [...zone.querySelectorAll('.card')].filter(c=>c!==card);
+    let inserted = false;
+    for(const sib of siblings){
+      const r = sib.getBoundingClientRect();
+      if(x < r.left + r.width/2){
+        zone.insertBefore(card, sib);
+        inserted = true;
+        break;
+      }
+    }
+    if(!inserted) zone.appendChild(card);
+  } else {
+    // dropped outside any valid zone -> return to original spot
+    originParent.insertBefore(card, originNext);
+  }
+
+  card.classList.toggle('in-combo', card.parentElement && card.parentElement.dataset.zone === 'combo');
+
+  dragState = null;
+  currentZone = null;
+  refreshCounts();
+}
+
+// ---------- category reordering ----------
+function animateReorder(mutationFn){
+  const lanes = [...catZone.children];
+  const firstRects = new Map(lanes.map(l => [l, l.getBoundingClientRect()]));
+
+  mutationFn();
+
+  const lanesAfter = [...catZone.children];
+  lanesAfter.forEach(l=>{
+    const first = firstRects.get(l);
+    if(!first) return;
+    const last = l.getBoundingClientRect();
+    const deltaY = first.top - last.top;
+    if(Math.abs(deltaY) > 1){
+      l.style.transition = 'none';
+      l.style.transform = `translateY(${deltaY}px)`;
+      l.style.zIndex = deltaY < 0 ? 5 : 1;
+      requestAnimationFrame(()=>{
+        l.style.transition = 'transform .38s cubic-bezier(.2,.8,.3,1)';
+        l.style.transform = '';
+      });
+      l.addEventListener('transitionend', function cleanup(){
+        l.style.transition = '';
+        l.style.zIndex = '';
+        l.removeEventListener('transitionend', cleanup);
+      });
+    }
+  });
+}
+
+function pushCategoryDown(lane){
+  const lanes = [...catZone.children];
+  const isLast = lanes[lanes.length - 1] === lane;
+  animateReorder(()=>{
+    if(isLast){
+      // already at the very bottom -> wrap around and jump to the top
+      catZone.insertBefore(lane, catZone.firstChild);
+    } else {
+      // push it all the way to the bottom; whoever was below rises to take its place
+      catZone.appendChild(lane);
+    }
+  });
+}
+
+function setupCategoryReorder(lane, head){
+  const btn = head.querySelector('.cat-top-btn');
+  btn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    pushCategoryDown(lane);
+  });
+
+  // swipe-down gesture on the header
+  let startY = null, startX = null, swiping = false;
+
+  head.addEventListener('pointerdown', (e)=>{
+    if(e.target.closest('.cat-top-btn')) return;
+    startY = e.clientY;
+    startX = e.clientX;
+    swiping = true;
+    head.classList.add('swiping');
+    head.setPointerCapture(e.pointerId);
+  });
+
+  head.addEventListener('pointermove', (e)=>{
+    if(!swiping) return;
+    const deltaY = e.clientY - startY;
+    const deltaX = Math.abs(startX - e.clientX);
+    if(deltaY > 10 && deltaY > deltaX){
+      head.style.transform = `translateY(${Math.min(deltaY,40)*0.4}px)`;
+    }
+  });
+
+  const endSwipe = (e)=>{
+    if(!swiping) return;
+    swiping = false;
+    head.classList.remove('swiping');
+    head.style.transform = '';
+    const deltaY = (e.clientY ?? startY) - startY;
+    const deltaX = Math.abs(startX - (e.clientX ?? startX));
+    if(deltaY > 45 && deltaY > deltaX){
+      pushCategoryDown(lane);
+    }
+  };
+  head.addEventListener('pointerup', endSwipe);
+  head.addEventListener('pointercancel', endSwipe);
+}
+
+function refreshCounts(){
+  CATEGORIES.forEach(cat=>{
+    const laneCards = document.querySelector(`.lane-cards[data-cat="${cat.id}"]`);
+    const countEl = laneCards.closest('.category-lane').querySelector('.cat-count');
+    countEl.textContent = laneCards.querySelectorAll('.card').length;
+  });
+}
+
+// ---------- modal dialog ----------
+const modalOverlay = document.getElementById('modal-overlay');
+
+function closeModal(){
+  modalOverlay.style.display = 'none';
+  modalOverlay.innerHTML = '';
+}
+
+function showModal({title, sub, bodyEl, buttons}){
+  modalOverlay.innerHTML = '';
+  const box = document.createElement('div');
+  box.className = 'modal-box';
+
+  const h3 = document.createElement('h3');
+  h3.textContent = title;
+  box.appendChild(h3);
+
+  if(sub){
+    const p = document.createElement('div');
+    p.className = 'modal-sub';
+    p.textContent = sub;
+    box.appendChild(p);
+  }
+
+  if(bodyEl) box.appendChild(bodyEl);
+
+  const actions = document.createElement('div');
+  actions.className = 'modal-actions';
+  buttons.forEach(b=>{
+    const btn = document.createElement('button');
+    btn.textContent = b.label;
+    if(b.primary) btn.classList.add('primary');
+    btn.addEventListener('click', (e)=> b.onClick(e, btn));
+    actions.appendChild(btn);
+  });
+  box.appendChild(actions);
+
+  modalOverlay.appendChild(box);
+  modalOverlay.style.display = 'flex';
+}
+
+modalOverlay.addEventListener('click', (e)=>{
+  if(e.target === modalOverlay) closeModal();
+});
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape') closeModal();
+});
+
+// ---------- notes on cards ----------
+const notes = {};
+
+function openNoteEditor(card){
+  const ta = document.createElement('textarea');
+  ta.placeholder = 'למשל: מה גרם לזה, איך זה מרגיש בגוף, עם מי זה קשור...';
+  ta.value = notes[card.dataset.id] || '';
+
+  showModal({
+    title: card.dataset.text,
+    sub: 'כתבו כמה מילים על הרגש הזה עכשיו',
+    bodyEl: ta,
+    buttons: [
+      { label:'ביטול', onClick: ()=> closeModal() },
+      { label:'שמירה', primary:true, onClick: ()=>{
+          const val = ta.value.trim();
+          if(val) notes[card.dataset.id] = val;
+          else delete notes[card.dataset.id];
+          card.classList.toggle('has-note', !!val);
+          closeModal();
+        }
+      }
+    ]
+  });
+  setTimeout(()=> ta.focus(), 30);
+}
+
+// ---------- share summary ----------
+function buildSummaryText(){
+  const rows = [
+    comboZone.querySelector('.combo-row.primary'),
+    ...extraRows.querySelectorAll('.combo-row')
+  ];
+  const lines = ['הקומבינציה הרגשית שלי:', ''];
+  let any = false;
+
+  rows.forEach(row=>{
+    if(!row) return;
+    const cards = [...row.querySelectorAll('.row-cards .card')];
+    if(!cards.length) return;
+    any = true;
+    const label = row.querySelector('.row-label').textContent;
+    lines.push(`${label}:`);
+    cards.forEach(c=>{
+      const text = c.dataset.text;
+      const note = notes[c.dataset.id];
+      lines.push(note ? `• ${text} — ${note}` : `• ${text}`);
+    });
+    lines.push('');
+  });
+
+  if(!any) lines.push('(עדיין לא נבחרו רגשות לקומבינציה למעלה)');
+  return lines.join('\n').trim();
+}
+
+function openShareSummary(){
+  const text = buildSummaryText();
+  const pre = document.createElement('pre');
+  pre.textContent = text;
+
+  showModal({
+    title: 'סיכום לשיתוף',
+    sub: 'אפשר להעתיק ללוח או לשתף ישירות',
+    bodyEl: pre,
+    buttons: [
+      { label:'סגירה', onClick: ()=> closeModal() },
+      { label:'העתק', onClick: async (e, btn)=>{
+          try{
+            await navigator.clipboard.writeText(text);
+            btn.textContent = 'הועתק ✓';
+            setTimeout(()=> btn.textContent = 'העתק', 1500);
+          }catch(err){
+            btn.textContent = 'לא ניתן להעתיק';
+          }
+        }
+      },
+      { label:'שתף', primary:true, onClick: async ()=>{
+          if(navigator.share){
+            try{ await navigator.share({ title:'הקומבינציה הרגשית שלי', text }); }
+            catch(err){ /* user cancelled share - do nothing */ }
+          } else {
+            try{
+              await navigator.clipboard.writeText(text);
+              alert('השיתוף הישיר אינו נתמך בדפדפן הזה — הסיכום הועתק ללוח במקום.');
+            }catch(err){
+              alert('לא ניתן לשתף או להעתיק בדפדפן הזה.');
+            }
+          }
+        }
+      }
+    ]
+  });
+}
+
+document.getElementById('share-summary-btn').addEventListener('click', openShareSummary);
+</script>
+</body>
+</html>
